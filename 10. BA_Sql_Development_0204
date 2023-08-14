@@ -1,0 +1,160 @@
+--TRANSACTION :
+
+begin transaction 
+	insert into...
+end transaction
+
+
+create table Balance
+(
+Id int primary key identity(1,1),
+Ad nvarchar(20),
+Bakiye int,
+TCKimlikNo nchar(11)
+)
+
+insert Balance
+values('Yasemen',1000,'12345678901'),
+('Mehmet',100,'12345678902'),
+('Burçak',200,'12345678903'),
+('Koray',500,'12345678904')
+
+/*
+try
+(
+1..
+2..
+3..
+)
+catch
+(
+rollback
+)
+*/
+
+begin try 
+	update Balance set Bakiye -= 400 where TCKimlikNo = '12345678901'
+	raiserror('Servera kedi girdi yha hoff.s.s.',16,2)
+	update Balance set Bakiye += 400 where TCKimlikNo = '12345678903'
+end try
+begin catch
+		print 'yha yeni duyduk kedidenmiş canım sorry'
+end catch
+
+
+select * from Balance
+
+begin try 
+	begin tran
+	update Balance set Bakiye -= 400 where TCKimlikNo = '12345678901'
+	--raiserror('Servera kedi girdi yha hoff.s.s.',16,2)
+	update Balance set Bakiye += 400 where TCKimlikNo = '12345678903'
+	commit tran
+end try
+begin catch
+		print '400 ü kurtardık bu sefer'
+		rollback tran 
+end catch
+
+----------------------------------------------
+-------------T R I G G E R--------------------
+----------------------------------------------
+--TRIGGER OTOMATİK ÇALIŞAN SP LERDİR
+--Yapılan işlemleri iki sanal tabloda tutar;
+	--inserted 
+	--deleted
+
+	--trigger 3e ayrılır;
+	--1- dml trg
+	--2- ddl trg
+	--3- logon trg
+
+--DML TRIGGER:
+	--after trg
+	--insteadOf trg
+
+	--after trg:
+	create trigger takipsss on employees
+	after insert
+	as
+	begin
+		print('yeni gelen çalışanlarımızın özlük bilgilerini kontrol ediniz')
+	end
+
+	insert Employees(FirstName,lastname)
+	values('Yasemen','Hancıoğlu')
+
+	select * from Employees
+
+	--yeni bir sipariş geldiğinde stok güncelleyen trg:
+	create trigger stoklarımıGüncelle on [order details]
+	after insert
+	as
+	begin
+	declare @urunId int, @miktar int;--değişken tanımı yaptım
+	select @urunId = productId, @miktar=quantity from inserted
+
+	update Products
+	set UnitsInStock -= @miktar--5 | UnitsInStock = UnitsInStock - @miktar
+	where ProductID = @urunId--73
+	end
+
+	insert [order details]
+	values(10279,73,12,5,0)
+
+	select * from Products where ProductID = 73--101-5 = 96
+	select * from [order details]   where ProductID = 73 and orderID=10279
+
+	--order details tablosunda olacak olan her türlü inst, upt, delete işlemlerinden 
+	--sonra işlemin adını print eden trg:
+	--1.yol
+	alter trigger StepByStepControl on [order details]
+	for insert, update, delete
+	as
+	begin
+			if not exists(select 1 from inserted)
+				print('delete yapıldı')
+			else if not exists(select 1 from deleted)
+				print('insert yapıldı')
+			else if (exists(select 0 from inserted) and exists(select 0 from deleted) )
+				print('update yapıldı')
+	end
+
+	--2.yol
+	alter trigger StepByStepControl on [order details]
+	for insert, update, delete
+	as
+	begin
+	 if (exists(select 0 from inserted) and exists(select 0 from deleted) )
+				print('update yapıldı')
+			else if  exists(select 1 from inserted)
+				print('insert yapıldı')
+			else if  exists(select 1 from deleted)
+				print('delete yapıldı')
+			
+	end
+
+	select*from [Order Details]
+	
+	insert  [Order Details]
+	values(10248,74,34.8,3,0)
+
+	update [Order Details] set Quantity=3 where OrderID=10248 and ProductID=73
+---------
+
+select * into shippers_bck
+from Shippers
+
+select * from shippers_bck
+select * from Shippers
+
+delete Shippers where ShipperID = 4
+
+create trigger backup_trg on shippers
+after delete
+as
+begin
+		declare @comname varchar(20), @phone nvarchar(20)
+		select @comname = companyname, @phone = phone from deleted
+		insert Shippers_bck values(@comname,@phone)
+end
