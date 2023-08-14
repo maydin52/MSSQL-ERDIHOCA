@@ -1,0 +1,170 @@
+
+--DDL(DATA DEFINITION LANG)
+	--create
+	--alter
+	--drop
+	--truncate
+
+	create table a_tablosu
+	(
+	id int not null ,
+	Ad nchar(10),
+	lokasyon nvarchar(100)
+	)
+
+	alter table a_tablosu
+	alter column Ad nvarchar(10) --oracle : modify Ad  nvarchar(10)
+
+	alter table a_tablosu
+	add yas int
+
+	select * from a_tablosu
+
+	insert into a_tablosu(Ad,lokasyon,yas)
+	values('Mehmet','Maltepe',25)
+
+	update a_tablosu
+	set id = ('2')
+	where yas=25
+
+	truncate table a_tablosu --tablonun verileri tümden siler
+
+	drop table a_tablosu--tabloyu kalıcı olarak siler
+
+/*
+öğrenciler tablosu oluşturun,
+yeni bir kolon ekleyin,
+tablonun içini doldurun,
+bir öğrencinin notunu günelleyin,
+sınıftan ayrılan öğrencinin Isactive kolonunu 0 a güncelleyin,
+*/
+--erdi.tiryaki@gmail.com
+
+create table Ogrenciler
+(
+Ogrenci_Id int,
+Ogrenci_Adı nvarchar(10),
+Ogrenci_Soyadı nvarchar(10),
+Sınıf_Tipi nvarchar(10)
+)
+
+select * from Ogrenciler
+
+insert Ogrenciler(Ogrenci_Id,Ogrenci_Adı,Ogrenci_Soyadı,Sınıf_Tipi)
+values
+(1,'ERDİ','TİRYAKİ','SAYISAL'),
+(2,'ALAATTIN','ÇAVUŞ','EA'),
+(3,'MEHMET','AYDIN','SAYISAL'),
+(4,'YASEMEN','HANCIOĞLU','SÖZEL'),
+(5,'KORAY ZEKİ','YILMAZALP','EA')
+
+ALTER TABLE OGRENCILER
+ADD NOTLAR INT
+
+ALTER TABLE OGRENCILER
+ADD ISACTIVE BIT
+
+UPDATE Ogrenciler
+SET NOTLAR = 50
+WHERE Ogrenci_Id = 2
+
+TRUNCATE TABLE OGRENCILER
+
+DROP TABLE OGRENCILER
+
+grant  select,insert,update  on table_name to username--d-etiryaki
+revoke select,insert,update  on table_name to username
+
+
+insert tgar.customer
+select 
+......
+from dgar.customer
+
+----------------------------------------
+--distinct :
+
+select distinct * from Ogrenciler
+select * from Ogrenciler
+
+select distinct ogrenci_id from Ogrenciler
+select  ogrenci_id from Ogrenciler
+
+--ödev : coalesce | isnull  araştırın
+--ödev2: cast     | convert araştırın
+
+--case when :
+
+select 
+country,
+case country 
+			 when 'USA' then 'imerika'
+			 when 'UK' then 'inkiltere'
+			 else 'TURK'
+end as hesaplama_kolonum
+from Employees
+
+
+select 
+country,
+case when country ='USA' then 'imerika'
+	 when country ='UK'  then 'inkiltere'
+	 else 'TURK'
+end as hesaplama_kolonum
+from Employees
+
+--çalışanlar tablosuna PERFORMANS_PUANI kolonu ekleyin,
+--içeriye random puanlar insert ediniz,
+--puanı 50ten küçük olanlar için kötü,
+--50ten büyük olanlar için iyi,
+--50 olanlar için vasat yazan case wheni yazınız..
+
+select EmployeeID,PERFORMANS_PUANI from Employees
+
+alter table employees
+add PERFORMANS_PUANI int
+
+--ödev:
+insert Employees
+(PERFORMANS_PUANI)
+select 10 from Employees
+where EmployeeID =1
+
+
+select 
+EmployeeID,
+firstname, 
+PERFORMANS_PUANI ,
+case when PERFORMANS_PUANI >50 then 'İYİ'
+	 when PERFORMANS_PUANI <50 then 'KÖTÜ'
+	 else 'VASAT'
+	 end as çalışan_durumu
+from Employees
+
+/*
+update a_tbl--delete insert
+set kolon = ''
+
+alter table a_tbl
+drop column kolon
+*/
+----------------------------------------
+
+--group by:
+select OrderID,UnitPrice,Quantity 
+from [Order Details]
+where OrderID = 10248
+
+--her bir siparişte toplam ne kadarlık alışveriş yaptım?
+select orderId,SUM(unitprice*Quantity) as toplam_miktar
+from [Order Details]
+group by orderId
+
+--çalışanlarımdan hangi ülkeden kaç tane çalışan olduğunu veren sql
+
+country | adet
+usa			5
+uk			3
+null		1
+
+-- toplam_miktar alanında 500tl altındaki değerleri eleyen sql i yazınız?
