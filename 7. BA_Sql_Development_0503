@@ -1,0 +1,96 @@
+--her bir çalışanı rapor verdiği kişiyle birlikte listeleyin..(reportsto)
+select 
+e1.EmployeeID çalısanId,
+e1.FirstName as isim,
+e1.ReportsTo as MüdürId,
+--e2.EmployeeID müdürId2,
+e2.FirstName as müdürAdı
+from Employees e1
+left join Employees e2 on e1.ReportsTo = e2.EmployeeID
+
+select 
+e1.EmployeeID çalısanId,
+e1.FirstName as isim,
+e1.ReportsTo as MüdürId,
+--e2.EmployeeID müdürId2,
+e2.FirstName as müdürAdı
+from Employees e1
+join Employees e2 on e1.ReportsTo = e2.EmployeeID
+
+select 
+e2.EmployeeID çalısanId,
+e2.FirstName as isim,
+e2.ReportsTo as MüdürId,
+e1.EmployeeID müdürId2,
+e1.FirstName as müdürAdı
+from Employees e1
+right join Employees e2 on e1.EmployeeID = e2.ReportsTo
+
+--------------------------------------------------------
+--subquery:
+select * from Products
+where unitprice = 263.5 = max(unitprice)
+
+
+select * from Products
+where unitprice = (
+					select  max(unitprice) 
+					from Products
+				  )
+
+--ürünler tablosundaki satılan ürünlerin listesi?
+
+select * from Products
+where ProductID in (
+select ProductID from [Order Details]
+)
+
+select * from Products
+where ProductID not in (
+select ProductID from [Order Details]
+)
+
+select  a.ProductID as ürünno,LEFT(a.categoryname,2)--a.CategoryID,a.ProductID,a.SupplierID
+from 
+(
+select P.ProductID,p.ProductName,p.supplierId,c.* 
+from Products p 
+left join Categories c on p.CategoryID = c.CategoryID
+)  a
+where a.ProductID in(1,2,3,4,5,6)
+
+--siparişler tablosundaki taşıyıcı firmaların üstlendiği siparişlerin adedi?
+select 
+o.ShipVia,		--shipperId
+(select s.companyname from Shippers s where s.ShipperID = o.ShipVia),--s.companyname
+COUNT(*)
+from Orders o
+--join shippers s on s.ShipperID = o.ShipVia
+group by o.ShipVia--,s.companyname
+
+select 
+o.ShipVia,		--shipperId
+s.companyname,
+COUNT(*)
+from Orders o
+join shippers s on s.ShipperID = o.ShipVia
+group by o.ShipVia,s.companyname
+
+--exists | view | variable | udf 
+
+--exists | not exists:
+select * from Categories
+
+select * from Products p 
+where exists (select 1 from Categories c where c.CategoryID=p.CategoryID)
+
+select * from Products p 
+where not exists (select 1 from Categories c where c.CategoryID=p.CategoryID)
+
+/*
+delete from a_tbl a 
+where exists (
+				select 1 from b_tbl b
+				where a.id = b.id      --1,2,3,4,5
+			 )
+*/
