@@ -1,0 +1,204 @@
+
+--procedure | transaction | trigger
+
+select c.*,1 as new from Customers c
+
+--verilen numaranın hangi operatör olduğunu veren func?
+--turkcell : 0532 369 26 91
+
+select dbo.oper ('5545837236')
+
+alter function oper (@ceptel nchar(10)) --05545837236
+returns nchar(20)
+begin
+	declare @sonuc nvarchar(50);
+	--if(len(@ceptel) <> 10)
+	--	set @sonuc = 'Hatalı'
+	    if (SUBSTRING(@ceptel,1,3) in('532','533','536'))
+		set @sonuc = 'TURKCELL'
+	else if (SUBSTRING(@ceptel,1,3) in('554','555','556'))
+		set @sonuc = 'TURK TELEKOM'
+	else if (SUBSTRING(@ceptel,1,3) in('540','541','542'))
+		set @sonuc = 'VODAFONE'
+	else set @sonuc = 'ERDICELL'
+	
+	return @sonuc;
+end 
+
+--declare table | temp table --> nedir? farkları ve avantajları nelerdir ?
+
+--2) Table Value Func:
+
+create function func_name(@parametre tip)
+returns table
+return
+		select * from 
+
+
+create function calisanlar(@empid int)
+returns table 
+return
+		select * from Employees where EmployeeID < @empid --7
+
+select * from calisanlar(7)
+
+--ödev: girilen plakaya göre şehir ismini getiren func ı yazınız ?
+----------------------------------------------------
+-----------S T O R E D  P R O C E D U R E-----------
+
+create procedure new_sp
+as
+begin 
+	select  EmployeeID,FirstName,LastName
+	from Employees
+	where EmployeeID >5
+	
+end
+
+exec new_sp --oracle : call new_sp
+execute new_sp
+
+drop procedure new_sp
+
+--tüm kategorilerle bu kategorilere ait ürünleri listeleyen proc u yazınız?
+CREATE OR ALTER PROCEDURE [dbo].[spCategories]
+AS
+SELECT c.CategoryID,c.CategoryName,p.ProductID,p.ProductName FROM Categories C
+JOIN Products P
+ON C.CategoryID=P.CategoryID
+
+create procedure sp_with_param
+@id int
+as
+--kredi hesaplama
+begin
+		select * from Categories 
+		where CategoryID = @id
+end
+--risk - teminat hesabı
+begin
+		select * from Categories 
+		where CategoryID = @id
+end
+--teminatın flg ataması
+begin
+		select * from Categories 
+		where CategoryID = @id
+end
+
+--çalışanlarımdan adı nancy, soyadı davolio olan çalışanımı getiren sp?
+create procedure sp_nancy1
+as
+begin
+select * from Employees
+where FirstName = 'Nancy' and LastName = 'Davolio'
+end
+
+CREATE OR ALTER PROCEDURE [dbo].[spEmployee1]
+@argFirstName varchar(50),
+@argLastName varchar(50)
+AS
+SELECT * FROM Employees
+WHERE FirstName=@argFirstName and LastName=@argLastName
+
+exec dbo.spEmployee1 'hande' , 'saydam'
+
+
+--dışardan girilen üç sayıyı toplayan sp?
+
+create or alter procedure topla_sp
+@sayi1 int,
+@sayi2 int,
+@sayi3 int
+as
+begin
+	select @sayi1+@sayi2+@sayi3 as toplam
+end
+
+exec topla_sp 2,3,4
+
+--ürünler tablosuna ürün eklyen sp ?
+create procedure add_prod
+@ürün nvarchar(20)
+as
+begin
+		insert products(ProductName) 
+		values(@ürün)
+end
+
+exec add_prod 'Ajdar'
+
+select * from products
+order by 1 desc
+
+
+select * from categories
+/*
+eğer (if) categories tablosunda 'Temizlik' adında bir kategori varsa 
+temizlik yerine 'Cleaning' yazdır,
+eğer yoksa(else) kayıdı ekle
+*/
+create procedure Urun_kontrol
+@UrunAdi nvarchar(20)
+as
+begin
+		if exists (select * from Categories where CategoryName = @UrunAdi) --'Temizlik'
+			update Categories
+			set CategoryName = 'Cleaning'
+			where CategoryName = @UrunAdi --'Temizlik'
+		else 
+			insert Categories(CategoryName)
+			values(@UrunAdi)
+end
+
+execute Urun_kontrol 'Temizlik'
+
+select * from Categories
+
+
+
+create table persons
+(
+id int primary key identity(1,1),
+dogum_tarihi date
+)
+
+insert persons(dogum_tarihi)
+values(getdate()-4),
+(getdate()-3),
+(getdate()-2),
+(getdate()-1),
+(getdate()  ),
+(getdate()+1),
+(getdate()+2),
+(getdate()+3)
+
+select * from persons
+
+--bugün doğan kişiyi getiren sp?
+select * from persons
+where datepart(day,dogum_tarihi) = datepart(day,getdate())
+
+select * from persons
+where dogum_tarihi = getdate()
+
+select * from persons
+where dogum_tarihi = cast(getdate() as date)
+
+select getdate()
+
+
+CREATE PROCEDURE doganlar
+AS
+select * from persons
+where datepart(day,dogum_tarihi) = datepart(day,getdate())
+
+
+exec doganlar
+
+--cast convert
+select cast(3 as nvarchar) + 'a'
+
+cast(... as nvarchar)
+cast(... as date)
+cast(... as int)
