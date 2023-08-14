@@ -1,0 +1,138 @@
+--info | knowledge
+--where
+use NORTHWND_new
+go
+select * from employees
+
+select * 
+from Employees 
+where EmployeeID = 1
+
+select * from Employees where EmployeeID > 5
+select * from Employees where EmployeeID < 5
+select * from Employees where EmployeeID < 5 and EmployeeID >2
+select * from Employees where EmployeeID < 5 or EmployeeID >2
+
+
+select * 
+from Employees 
+where EmployeeID <= 5 
+and EmployeeID >= 2
+
+select * from Employees where EmployeeID in (2,3,4,5)
+select * from Employees where EmployeeID not in (2,3,4,5)
+
+select * from Employees where EmployeeID = 1
+select * from Employees where EmployeeID in (1)
+
+select * from Employees where EmployeeID <> 1		--eşit değildir
+select * from Employees where EmployeeID != 1		--eşit değildir
+select * from Employees where EmployeeID not in (1) --eşit değildir
+
+select * from Employees where FirstName like 'A%'
+select * from Employees where FirstName like '%A'
+select * from Employees where FirstName like '%A%'
+select * from Employees where FirstName not like '%A%'
+select * from Employees where FirstName like 'Anne'
+select * from Employees where FirstName = 'Anne'
+
+select * from Employees where title is null
+select * from Employees where title is not null
+
+--çalışanlar tablosunu kullanarak ;
+--region kolonu null olan
+--country kolonu usa olmayan 
+--yaşları 55 den büyük çalışanlarımın adını soyadını ve ünvanını getiren sql i yazınız
+
+select FirstName, LastName, Title, DATEDIFF(year,birthdate,getdate()) as yaş
+from Employees
+where Region is null
+and country <> 'usa'
+and DATEDIFF(year,birthdate,getdate()) > 55
+
+--shipcity si graz olan ve id si 3,4,5 olmayan çalışanlarımın ilgilendiği siparişleri getiren sql
+sELECT * 
+FROM Orders 
+where ShipCity='GRAZ' 
+AND EmployeeID NOT IN (3,4,5)
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+/*
+--DML(DATA MANUPULATION LANG)
+	SELECT :VERİYİ ÇEKER
+	INSERT :VERİ GİRİŞİ YAPAR
+	UPDATE : VERİYİ GÜNCELLER
+	DELETE : VERİ SİLER
+*/
+
+--insert:
+insert into a_tablosu
+select * from b_tablosu
+
+insert into [dbo].[shippers_ydk](ComName,Phone)
+values('Erdi Havayolları','5545837236')
+
+insert Shippers
+values('Yasemen Nakliyat','5545837236')
+
+select * from Shippers
+select * from [dbo].[shippers_ydk]
+
+--update
+
+update Shippers
+set Phone = '5545555555'
+where ShipperID = 6
+-------------------------------
+select * from shippers_ydk
+ 
+insert into [dbo].shippers_ydk
+values 
+('SertBudak evden Eve Nakliyat', '5555555555'),
+('Hancıoğlu Kafe', '5555555555'),
+('Çavuş Nakliyat', '5555555555')
+ 
+update Shippers
+set CompanyName = 'Elif Havayolları'
+where ShipperID =7
+
+delete shippers_ydk
+where Id = 3
+
+select * into Customers_ydk
+from Customers
+
+select * from Customers_ydk
+
+/*oracle : ctas
+
+create table a_tablosu
+as
+select * from b_tablosu
+*/
+
+--DDL(DATA DEFINITION LANG)
+	--create
+	--alter
+	--drop
+	--truncate
+
+	create table a_tablosu
+	(
+	id int identity(1,1) ,
+	Ad nchar(10),
+	lokasyon nvarchar(100)
+	)
+
+	alter table a_tablosu
+	alter column Ad nvarchar(10) --oracle : modify Ad  nvarchar(10)
+
+	alter table a_tablosu
+	add yas int
+
+
+
+
+
+
