@@ -1,0 +1,221 @@
+--InsteadOf trg:
+
+--alter table Employees 
+--add IsActive int
+
+--update Employees
+--set IsActive = 1
+
+select e.Isactive,e.* from Employees e
+
+delete Employees where EmployeeID = 10 --@empId
+
+
+create trigger calisan_kntrl_trg on employees
+instead of delete
+as
+begin
+		declare @empId int;
+		select @empId = EmployeeID from deleted
+
+		update Employees 
+		set IsActive = 0
+		where EmployeeID = @empId
+
+end
+
+--shippers a bir den fazla firma insert et sonra
+--shippers da silinen her kargo firmasını yedekleyen trg?
+
+
+alter table shippers
+add IsActive int
+
+update Shippers
+set IsActive = 1
+
+create trigger Oguzhan on shippers
+instead of delete
+as
+begin
+		declare @ShipId int
+		declare @comname nvarchar(20) 
+		declare @phone nvarchar(20)
+
+		select @ShipId = shipperId, @comname = CompanyName, @phone = Phone from deleted
+		insert shippers_bck
+		values(@ShipId,@comname,@phone)
+
+		--select * into tbl_yedek
+		--from tbl
+		--where @ShipId = shipperId 
+		--and @comname = CompanyName
+		--and @phone = Phone
+
+		--update Shippers
+		--set IsActive = 0
+		--where ShipperID = @ShipId
+end
+
+disable trigger Oguzhan on tbl,database
+enable trigger Oguzhan on tbl,database
+
+--ddl trg:
+create trigger view_ktrl on database
+after drop_view
+as
+	
+	print'view uçup gitti'
+
+	drop view [dbo].[Alphabetical list of products]
+
+create trigger tablo_block on database
+after alter_table
+as
+	raiserror('Kafana göre alter yapamazsın',16,2)
+	rollback
+
+	alter table employees
+	add noo int
+
+create trigger DBEngeli on all server
+for create_database
+as
+	raiserror('Kafana göre db kuramazsın',16,2)
+	rollback
+
+create database erdi
+
+
+create table DDL_Event_Data
+(
+Eventdata xml not null,
+Actiondate datetime not null default getdate()
+)
+
+create trigger Index_CNTRL on database
+for CREATE_INDEX,DROP_INDEX
+as
+	insert DDL_Event_Data(eventdata)
+	values(EVENTDATA())
+
+create nonclustered index IX_Control on dbo.customers(contactname)
+
+select * from DDL_Event_Data
+
+insert tbl_a
+select * from tbl_b@db_link
+
+
+--union | union all
+--1996 yıllarında ürün alımş müşteriler bilgisini getiren sql--veya 1997
+
+--152 rows
+SELECT * FROM Customers C --91
+JOIN Orders O --830
+ON C.CustomerID=O.CustomerID
+WHERE YEAR(O.OrderDate) = 1996
+
+--91 rows
+select * from Customers c where exists (
+SELECT * FROM Orders o   WHERE c.customerId = o.customerId and YEAR(OrderDate)=1996)--152
+
+--67 rows
+SELECT * FROM Customers 
+WHERE CustomerID IN (SELECT CustomerID FROM Orders WHERE YEAR(OrderDate)=1996)
+
+--union | union all (birleşim)
+--1996 veya 1997 yıllarında ürün alımş müşteriler bilgisini getiren sql
+
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1996
+				--and customerId ='ANATR'
+			 )
+union 
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1997
+				--and customerId ='ANATR'
+			 )
+
+--intersect(kesişim):
+
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1996
+				--and customerId ='ANATR'
+			 )
+intersect 
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1997
+				--and customerId ='ANATR'
+			 )
+--except(fark):
+
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1997
+				--and customerId ='ANATR'
+			 )
+except --oracle minus olarak kullanılır
+select * from Customers c 
+where exists (
+				SELECT * FROM Orders o   
+				WHERE c.customerId = o.customerId 
+				and YEAR(OrderDate)=1996
+				--and customerId ='ANATR'
+			 )
+
+--RN | DENSE_RANK | RANK
+
+select row_number() over(order by contacttitle),contacttitle
+from Customers
+
+select row_number() over(partition by contacttitle order by contacttitle),contacttitle
+from Customers
+
+select rank() over(order by contacttitle),contacttitle
+from Customers
+
+select dense_rank() over(order by contacttitle),contacttitle
+from Customers
+
+select * from [Order details] o
+select o.orderId,sum(o.unitprice) over(order by o.orderId) from [Order details] o
+
+create table sample
+(
+Id int,
+Ad varchar(20),
+harcarma_mik int
+)
+
+insert into sample
+values(1,'Erdi',100),(1,'Erdi',20),(1,'Erdi',50),
+(2,'Koray',200),(2,'Koray',300),(2,'Koray',500)
+
+--ÇIKTI :
+Id  Ad    Harcama_Mik new_column
+1   erdi  100		  170
+1	erdi  50		  170
+1	erdi  20		  170
+2	koray 200		  1000
+2	koray 300		  1000
+2	koray 500		  1000
+
+select Id,Ad,sum(harcarma_mik) over(partition by ID order by ID) ORJ_COLUMN ,harcarma_mik,
+CASE WHEN AD = 'ERDİ' THEN 170
+	 ELSE 1000 END UYDURUK_COLUMN
+from sample
