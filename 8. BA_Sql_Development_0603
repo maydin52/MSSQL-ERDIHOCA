@@ -1,0 +1,156 @@
+--view :
+alter view view_sample2
+as
+select e.EmployeeID,
+e.FirstName+space(1)+e.lastname as x,
+e.city,
+r.RegionDescription,
+t.TerritoryDescription,
+et.TerritoryID as burçak
+from
+employees e,
+employeeTerritories et,
+territories t, 
+region r
+where e.EmployeeID = et.EmployeeID
+and et.TerritoryID =t.TerritoryID
+and t.RegionID = r.RegionID
+
+select * from view_sample2
+---------------------------------------------
+--variable :
+declare @Ad nvarchar(20) --değişken yaratıldı
+set @Ad = 'Erdi'		 --değişkene değer atandı
+select @Ad				 --değişkene atılan değeri getirir
+
+declare @isim nvarchar(10), @yas int
+select @isim = 'Burçak', @yas = 47
+select @isim, @yas
+
+--set e tek değişken atanırken, select e birden fazla değişken atanabilir !
+
+--hata alır
+declare @urunadi nvarchar(10)
+set @urunadi = (Select productname from Products) 
+select @urunadi
+
+--doğru çalışır
+declare @urunadi2 nvarchar(10)
+set @urunadi2 = (Select productname from Products where ProductID = 1)
+select @urunadi2
+
+--çalışır ama  istenilen sonucu üretmez
+declare @urunadi3 nvarchar(5)
+select @urunadi3 = productname from Products
+select @urunadi3
+
+--doğru çalışır
+declare @urunadi4 nvarchar(5)
+select @urunadi4 = productname from Products where ProductID  =1 
+select @urunadi4
+
+select productname from Products;
+--maxdop(16)
+
+/*
+oracle:
+select /*+parallel 16*/ 
+productname from Products
+*/
+
+/*
+USER DEFINED FUNCTION(UDF):
+fonksiyonlar bir kere yaratılır, çok defa kullanılır
+parametre alabilirler
+önceden create edildiği için çok hızlı çalışırlar
+alter ve drop edilebilirler
+
+1)Scalar Value Func
+2)Table  Value Func
+*/
+
+create function kdvli_Urun(@birimfiyat int)--parametre tanımı 
+returns money
+begin	
+		return( @birimfiyat * 1.18)
+end;
+
+select 
+ProductID,
+OrderID,
+UnitPrice,
+dbo.kdvli_Urun(unitprice) as kdvli_fiyat --dbo.kdvli_Urun(@birimfiyat)
+from [Order Details]
+
+
+--çalışanlarımın yaşını hesaplayan function ı yazınız?
+
+--1.yol :
+create function calisan_yıl_bilgileri(@yas datetime) --@yas = birthdate
+returns int
+begin
+		return datediff(yy,@yas,getdate())
+end
+
+select 
+FirstName,
+BirthDate,
+dbo.calisan_yıl_bilgileri(birthdate)as  yaş,
+dbo.calisan_yıl_bilgileri(hiredate) as kıdem
+from Employees
+
+select datediff(yy,'01012022',getdate())
+
+--2.yol :
+create function calisan_yıl_bilgileri2(@birthdate datetime) --@yas = birthdate
+returns int
+begin
+		 declare @yas int --değişkeni yarattım
+		 select @yas =datediff(yy,@birthdate,getdate()) --değişkene değer atadım
+		 return @yas --değişkeni return ettim
+end
+
+
+create function calisan_yıl_bilgileri3(@tarih datetime) --@yas = birthdate
+returns int
+begin
+		 declare @yil int --değişkeni yarattım
+		 select @yil =datediff(yy,@tarih,getdate()) --değişkene değer atadım
+		 return @yil --değişkeni return ettim
+end
+
+
+select 
+FirstName,
+BirthDate,
+dbo.calisan_yıl_bilgileri3(birthdate)as  yaş,
+dbo.calisan_yıl_bilgileri3(hiredate)as  kıdem
+from Employees
+
+select 
+FirstName,
+BirthDate,
+dbo.calisan_yıl_bilgileri2(birthdate)as  yaş
+from Employees
+
+--"DIŞARIDAN" kategoriId bilgisi alan,
+--aldığı bu kategori bilgisinin toplam kaç ürün sattığını gösteren func?
+create function Kategori_bilgisi(@KatId int)
+returns int
+begin 
+return
+(
+select sum(quantity)
+from [Order Details] od , Products p
+where p.ProductID = od.ProductID
+and CategoryID = @KatId--4
+)
+end
+
+select dbo.Kategori_bilgisi(4)-- from Categories
+select CategoryID,dbo.Kategori_bilgisi(CategoryID) from Categories
+
+select dbo.Kategori_bilgisi(4) from Categories
+select 2+3					   from Categories
+
+--procedure | transaction | trigger
