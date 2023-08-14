@@ -1,0 +1,86 @@
+--having :
+-- toplam_miktar alanında 500tl altındaki değerleri eleyen sql i yazınız?
+
+select 
+OrderID, SUM(UnitPrice*Quantity) as toplam_miktar
+from [Order Details] 
+where OrderID > 10250
+Group By OrderID
+having SUM(UnitPrice*Quantity) <500
+
+--her bir siparişteki toplam tutarı 2500 ile 3500 arasındaki olan 
+--siparişlerin sayılarını getiren sql i yazınız?
+SELECT OrderID,SUM(UnitPrice*Quantity) AS toplamTutar 
+FROM [Order Details]
+--join
+where OrderID > 10250
+group by OrderID
+having SUM(UnitPrice*Quantity)  between 2500 and 3500 -- SUM(UnitPrice*Quantity)> 2500 and  SUM(UnitPrice*Quantity)<3500
+order by 
+
+--order by :
+select * 
+from Employees
+order by EmployeeID --asc gibi davranır
+
+select * 
+from Employees
+order by EmployeeID asc -- küçükten büyüğe sıralama
+
+select * 
+from Employees
+order by EmployeeID desc -- büyükten küçüğe sıralama
+
+select * 
+from Employees
+order by 1 desc
+
+select COUNT(*) from 
+(
+SELECT OrderID,SUM(UnitPrice*Quantity) AS toplamTutar 
+FROM [Order Details]
+group by OrderID
+having SUM(UnitPrice*Quantity)  between 2500 and 3500 -- SUM(UnitPrice*Quantity)> 2500 and  SUM(UnitPrice*Quantity)<3500
+order by 1 desc
+)
+where orderId = askjdhaksjdh
+
+/*
+SELECT OrderID,SUM(UnitPrice*Quantity) AS toplamTutar 
+FROM [Order Details]
+where OrderID = 10248
+group by OrderID
+
+SELECT *
+FROM [Order Details]
+where OrderID = 10248
+*/
+
+--çalışanlar tablosunun son üç kaydını getiren sqli yazınız
+select top 3 * from Employees  --oracle : select * from emp where rownum < 4 order by 1 desc
+order by 1 desc
+----------------------------------------------------------
+--database design | 3nf | star | snowflake
+
+----------------------------------------------------------
+-----------------------J O I N ' S------------------------
+----------------------------------------------------------
+/*
+1-Inner Join
+2-Outer Join
+	2.1-Left  Outer Join
+	2.2-Right Outer Join
+	2.3-Full  Outer Join
+*/
+
+--1 Inner Join:
+select * 
+from Categories 
+inner join Products on Categories.CategoryID=Products.CategoryID
+
+select Categories.CategoryID,CategoryName,ProductID,ProductName 
+from Categories 
+inner join Products on Categories.CategoryID=Products.CategoryID
+order by 1
+
+select * from Categories
