@@ -1,0 +1,132 @@
+
+----------------------------------------------------------
+-----------------------J O I N ' S------------------------
+----------------------------------------------------------
+/*
+1-Inner Join
+2-Outer Join
+	2.1-Left  Outer Join
+	2.2-Right Outer Join
+	2.3-Full  Outer Join
+*/
+
+--1 Inner Join:
+select * 
+from Categories 
+inner join Products on Categories.CategoryID=Products.CategoryID
+
+select Categories.CategoryID,CategoryName,ProductID,ProductName 
+from Categories 
+inner join Products on Categories.CategoryID=Products.CategoryID
+order by 1
+
+--inner joinin 1. gösterimi
+select c.CategoryID,p.CategoryID,c.CategoryName,p.ProductName
+from Categories c
+inner join Products p on c.CategoryID= p.CategoryID
+
+--inner joinin 2. gösterimi
+select *
+from Categories c, Products p
+where p.CategoryID= c.CategoryID
+
+--customer , orders, employee tablolarını joinleyin
+select * 
+from Customers c, Orders o, Employees e
+where c.CustomerID=o.CustomerID 
+and o.EmployeeID=e.EmployeeID
+
+select * 
+from Customers c
+inner join orders o on c.CustomerID = o.CustomerID
+inner join Employees e on e.EmployeeID = o.EmployeeID
+
+--kategorilere göre toplam stok mktarını bulunuz ?
+
+select c.CategoryID,C.CategoryName, SUM (unitsinstock)
+from Categories c, Products p
+where c.CategoryID=p.CategoryID
+group by c.CategoryID,c.CategoryName
+
+select c.CategoryID,productname, sum(unitsinstock)
+from Categories c, Products p
+where c.CategoryID=p.CategoryID
+group by c.CategoryID,productname
+order by 1 
+
+--her bir çalışan toplam ne kadarlık satış yapmıştır?
+select * from Employees
+select * from Orders
+select * from [Order Details]
+
+--1.yol
+select e.EmployeeID, 
+SUM(od.unitprice*quantity)
+from Employees e
+inner join Orders o on e.EmployeeID=o.EmployeeID
+inner join [Order Details] od on o.OrderID=od.OrderID
+group by e.EmployeeID
+order by 2 desc
+
+--2.yol
+SELECT * 
+FROM Employees E, Orders O, [Order Details] OD
+where E.EmployeeID = O.EmployeeID and O.OrderID = OD.OrderID
+ 
+
+/*
+sipariş numarasını,
+ürün adını,
+kategori adını,
+tedarikçi firma adını
+müşteri adını 
+getiren sql scriptini yazınız
+*/
+select o.OrderID, p.ProductName, ca.CategoryName, s.CompanyName, c.CompanyName
+from
+orders o, Customers c, [Order Details] od,Products p, Categories ca, Suppliers s
+where 
+c.CustomerID=o.CustomerID and o.OrderID=od.OrderID 
+and od.ProductID=p.ProductID and p.CategoryID=ca.CategoryID and p.SupplierID=s.SupplierID
+
+/*
+select c.CategoryID,c.CategoryName,p.ProductID,p.ProductName
+from Categories c
+inner join Products p on p.CategoryID = c.CategoryID
+
+select c.CategoryID,c.CategoryName,p.ProductID,p.ProductName
+from  Products p
+inner join Categories c on p.CategoryID = c.CategoryID
+*/
+--toplam cirosu 5000 den büyük olam siparişlerin
+--hangi müşteriye
+--hangi kategorili üründen satıldığını bulunuz[Phone]
+
+select*from Customers
+select*from Categories
+select*from [Order Details]
+select*from Products
+
+select top 3 c.CustomerID,cs.CategoryName,SUM(od.unitprice*od.quantity)
+from Orders o,Customers c,[Order Details] od,Products p,Categories cs
+where o.CustomerID=c.CustomerID and o.OrderID=od.OrderID and od.ProductID=p.ProductID and p.CategoryID=cs.CategoryID
+group by c.CustomerID,cs.CategoryName
+having SUM(od.unitprice*od.quantity)>5000
+
+--Left Join:
+select c.CategoryID,CategoryName,ProductID,ProductName
+from Categories c left join Products p on p.CategoryID=c.CategoryID
+
+select ProductID,ProductName,c.CategoryID,CategoryName
+from Products p left join Categories c  on p.CategoryID=c.CategoryID
+where c.CategoryID is null
+
+
+
+select ca.CategoryID,o.OrderID, p.ProductName
+from
+orders o
+join [Order Details] od on o.OrderID=od.OrderID
+join Products p on od.ProductID=p.ProductID
+right join Categories ca on ca.CategoryID=p.CategoryID
+order by 1 desc
