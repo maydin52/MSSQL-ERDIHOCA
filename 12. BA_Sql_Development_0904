@@ -1,0 +1,137 @@
+select * from Categories C
+join products p on p.CategoryID = c.CategoryID
+
+update Categories
+set CategoryName = 'Deniz Ürünleri' , Description ='Denizden babam çıksa yerim'
+where CategoryID = 8
+
+
+alter table employees
+add Dtarihi varchar(10)
+
+update Employees
+set Dtarihi = '01041989'
+where EmployeeID = 15
+
+select e.EmployeeID, e.FirstName,e.dtarihi,
+coalesce(e.dtarihi,'bilgi yok'),
+isnull(e.dtarihi,'bilgi yok')
+from Employees e
+
+/*
+TEMP TABLE:
+Lokal Temp Tablo :
+  Tabloyu kim oluşturduysa sadece o, aynı connection üzerinden bu tabloyu kullanabilir. 
+  Lokal temp tablolar, bu tabloyu oluşturan kişi instance üzerinden disconnect olduğunda silinir.
+*/
+create table #temp_tbl2 (tempkolon varchar(50) )
+insert into  #temp_tbl2 values('Erdi Tiryaki bambaşkadır')
+select * from #temp_tbl
+
+/*
+Global Temp Tablo :
+Global temp tablo oluşturulduğunda, bütün kullanıcılar ve bütün connectionlar tarafından görülebilir olur. 
+Bu tabloya bağlanan kullanıcılar instance üzerinden disconnect olduğunda silinirler.
+*/
+create table ##temp_tbl3 (tempkolon varchar(50) )
+insert into  ##temp_tbl3 values('Erdi Tiryaki bambaşkadır')
+select * from ##temp_tbl3
+
+select * from products with (nolock)
+
+/*
+Avantajlar:
+-Sadece size özel bir tablo olacağı için locklanma olmaz ve performans artışı sağlar
+-Production ortamdaki bir tablo üzerinde yapmaya korkacağınız işlemleri güvenli Bir şekilde temp tablolar üzerinde yapabilirsiniz
+-Normal bir tabloya yapabileceğiniz işlemleri temp tablolara da yapabilirsiniz(sort,filter,join)
+-Temp tablolarda index oluşturabilirsiniz.
+
+Dezavantaj:
+-Temp tablolar tempdb veritabanında duracağı için, tempdb veritabanının bulunduğu diskler yavaş olursa performans sorunu olacaktır.
+-Tempdb veritabanını büyüteceği için ekstra disk alanı gerektirecektir.(küçük temp tablolar bu soruna neden olmasada büyük temp tablolar oluşturan kod geliştiriciler olabilir)
+-User defined function’lar üzeriden temp tablolara insert,update ve delete yapamazsınız.
+*/
+
+/*
+TABLE VARIABLE
+Table Variable özel bir veri tipidir. 
+Sorgu içersinde bir sonuç kümesini table variable oluşturup içine atabilir ve daha sonra tekrar kullanabiliriz. 
+Temp tablolara benzer.
+
+-Table variable tanımlandıkları proc veya func bittiği anda silinirler
+-Select into ifadsiyle table variable 'a veri aktaramazsın
+-Table variable da transaction mantığı yoktur. Begin transactiondan sonra rollback yapamazsın
+-Table variable tipinde bir tabloya yapılan bir sorgunun query planını hesaplarken tabloda hiç kayıt yokmuş gibi düşünür
+	ve query planı buna göre hazırlar. Bu yüzden büyük verileri table variable a atarsan performans sorunu yaşarsın
+	büyük veriler için TEMP TABLO kullanabilirsiniz
+-Oluşturduktan sonra table variable alter edemezsiniz
+-Table Variable üzerinde,SQL Server 2014 den önce pk ve Unique Cons ile indexler oluşturuluyordu, non unique bir index oluşturulamıyordu..
+	SQL Server 2014 ile beraber non unique index oluşturulabiliyor
+*/
+declare @table_var table (var_column varchar(20))
+insert into  @table_var values('Erdi Tiryaki')
+select * from  @table_var
+
+create  table  table_var
+(
+var_column varchar(20)
+)
+--nested loop araştırın ?
+
+/*
+Farklar:
+-Tempte ve variable table da syntax farklılığı vardır.
+		cretae table #temp (temp int) --> temp table syntax
+		declare @Var table (var int)  --> variable table syntax
+
+-Her ikiside TEMPDB de tutulur
+-Büyük tablolarda temp table kullanılmalıdır ve temp'e index atanarak performans sorununu çözersiniz
+-Udf lerde temp tablo oluşturulamaz, table variable oluşturulur.
+*/
+
+--rank,row_number,dense_rank, lead, lag, ntile
+
+declare @Sample table
+(
+Yil int,
+Satis int
+)
+
+insert into @Sample
+Values('2018','1000'),('2019','2000'),('2020','3000'),('2021','4000'),('2022','5000')
+
+select 
+Yil,Satis
+,LEAD(Satis) over(order by Yil) lead_vers
+,Satis
+,LEAD(Satis,2) over(order by Yil) lead_vers2
+,Satis
+,LEAD(Satis,2,0) over(order by Yil) lead_vers3
+,Satis
+,LAG(Satis) over(order by Yil) lag_vers
+from @Sample
+
+--NTILE : Dışardan girilen parametreye göre gruplayıp RN ataması yapar.
+select 
+ntile(3) over(partition by p.categoryId order by p.categoryId),p.*
+from products p
+
+select 
+ntile(2) over(partition by p.categoryId order by p.categoryId),p.CategoryID
+from products p
+
+--dynamic query:
+declare @dq nvarchar(500) = 'select * from products'
+
+exec sp_executesql @dq
+
+insert a
+select * from products
+
+declare @sayi1 int = 1
+declare @sayi2 int = 9
+select iif(@sayi1 > @sayi2,'Erdi Hoca aşırı tatlıdır','Erdi Hoca HER ZAMAN HER YERDE en iyisidir')
+
+------- S O N-------
+
+
